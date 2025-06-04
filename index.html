@@ -231,14 +231,17 @@ const zamoraGame = {
 
   /* -------- reinicio -------- */
   reset(){
-    this.keys={}; this.frame=0; this.score=0; this.lives=4;
-    this.moveFreq=6; this.nextSpawn=1800;
-    if(this.zs.length){
-      for(let i=1;i<this.zs.length;i++) this.zs[i].gif.remove();
-    }
-    this.zs=[{x:460,y:240,gif:enemyGif}];
-    this.p={x:100,y:240};
-  },
+      this.keys={}; this.frame=0; this.score=0; this.lives=4;
+      this.moveFreq=6; this.nextSpawn=1800;
+      if(this.zs.length){
+        for(let i=1;i<this.zs.length;i++) this.zs[i].gif.remove();
+      }
+      this.zs=[
+        {x:460,y:240,gif:enemyGif},
+        {x:460,y:240,gif:createZamoraGif()}
+      ];
+      this.p={x:100,y:240};
+    },
 
   /* -------- colisión píxel‑perfect -------- */
   blocked(nx,ny){
