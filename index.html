@@ -237,6 +237,38 @@ const zamoraGame = {
     if(!this.blocked(nx,ny)){ o.x=nx; o.y=ny; }
   },
 
+  /* -------- calcular ruta -------- */
+  nextStep(){
+    const st=this.step,
+          sx=Math.round(this.z.x/st)*st,
+          sy=Math.round(this.z.y/st)*st,
+          tx=Math.round(this.p.x/st)*st,
+          ty=Math.round(this.p.y/st)*st,
+          dirs=[{dx:st,dy:0},{dx:-st,dy:0},{dx:0,dy:st},{dx:0,dy:-st}];
+
+    const q=[{x:tx,y:ty}], dist={};
+    dist[tx+','+ty]=0;
+    while(q.length){
+      const n=q.shift(),d=dist[n.x+','+n.y];
+      for(const dir of dirs){
+        const nx=n.x+dir.dx, ny=n.y+dir.dy, key=nx+','+ny;
+        if(dist[key]!==undefined||this.blocked(nx,ny)) continue;
+        dist[key]=d+1; q.push({x:nx,y:ny});
+      }
+    }
+
+    let best=null,bestDist=1e9;
+    for(const dir of dirs){
+      const nx=sx+dir.dx, ny=sy+dir.dy,
+            key=Math.round(nx/st)*st+','+Math.round(ny/st)*st;
+      const d=dist[key];
+      if(d!==undefined&&d<bestDist&&!this.blocked(nx,ny)){
+        bestDist=d; best=dir;
+      }
+    }
+    return best;
+  },
+
   /* -------- lógica de juego -------- */
   update(){
     /* movimiento héroe */
@@ -245,36 +277,19 @@ const zamoraGame = {
     if(this.keys['ArrowUp']||this.keys['w'])    this.move(this.p,0,-this.step);
     if(this.keys['ArrowDown']||this.keys['s'])  this.move(this.p,0, this.step);
 
-    /* Zamora cada 6 frames */
-    /* Zamora cada 6 frames: elige mejor paso entre 4 direcciones */
-if (++this.frame % 6 === 0) {
-  const dirs = [
-    {dx:  this.step, dy: 0},            // derecha
-    {dx: -this.step, dy: 0},            // izquierda
-    {dx: 0, dy:  this.step},            // abajo
-    {dx: 0, dy: -this.step}             // arriba
-  ];
-
-  /* calcula mejor dirección libre que minimice distancia al héroe */
-  let best = null, bestDist = Infinity;
-  for (const d of dirs) {
-    const nx = this.z.x + d.dx, ny = this.z.y + d.dy;
-    if (this.blocked(nx, ny)) continue;                    // pared
-    const dist = Math.abs(this.p.x - nx) + Math.abs(this.p.y - ny);
-    if (dist < bestDist) { bestDist = dist; best = d; }
-  }
-
-  /* si encontró ruta mejor, muévete; si no, avanza al azar libre */
-  if (best) this.move(this.z, best.dx, best.dy);
-  else {
-    // todas bloqueadas: prueba aleatorio hasta acertar
-    const opts = dirs.filter(d => !this.blocked(this.z.x + d.dx, this.z.y + d.dy));
-    if (opts.length) {
-      const r = opts[Math.floor(Math.random() * opts.length)];
-      this.move(this.z, r.dx, r.dy);
+    /* Zamora cada 6 frames usando ruta más cercana */
+    if(++this.frame % 6 === 0){
+      const step = this.nextStep();
+      if(step) this.move(this.z, step.dx, step.dy);
+      else {
+        const dirs=[{dx:this.step,dy:0},{dx:-this.step,dy:0},{dx:0,dy:this.step},{dx:0,dy:-this.step}];
+        const opts=dirs.filter(d=>!this.blocked(this.z.x+d.dx,this.z.y+d.dy));
+        if(opts.length){
+          const r=opts[Math.floor(Math.random()*opts.length)];
+          this.move(this.z,r.dx,r.dy);
+        }
+      }
     }
-  }
-}
 
     /* score +1 cada 30 frames */
     if(this.frame%30===0) this.score++;
