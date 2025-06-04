@@ -231,17 +231,14 @@ const zamoraGame = {
 
   /* -------- reinicio -------- */
   reset(){
-      this.keys={}; this.frame=0; this.score=0; this.lives=4;
-      this.moveFreq=6; this.nextSpawn=1800;
-      if(this.zs.length){
-        for(let i=1;i<this.zs.length;i++) this.zs[i].gif.remove();
-      }
-      this.zs=[
-        Object.assign({gif:enemyGif}, this.randomSpawn()),
-        Object.assign({gif:createZamoraGif()}, this.randomSpawn())
-      ];
-      this.p={x:100,y:240};
-    },
+    this.keys={}; this.frame=0; this.score=0; this.lives=4;
+    this.moveFreq=6; this.nextSpawn=1800;
+    for(const z of this.zs){
+      if(z.gif !== enemyGif) z.gif.remove();
+    }
+    this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
+    this.p={x:100,y:240};
+  },
 
   randomSpawn(ignore=null){
       for(let i=0;i<50;i++){
