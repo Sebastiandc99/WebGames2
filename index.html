@@ -240,10 +240,10 @@ const zamoraGame = {
   /* -------- calcular ruta -------- */
   nextStep(){
     const st=this.step,
-          sx=Math.round(this.z.x/st)*st,
-          sy=Math.round(this.z.y/st)*st,
-          tx=Math.round(this.p.x/st)*st,
-          ty=Math.round(this.p.y/st)*st,
+          sx=Math.floor(this.z.x/st)*st,
+          sy=Math.floor(this.z.y/st)*st,
+          tx=Math.floor(this.p.x/st)*st,
+          ty=Math.floor(this.p.y/st)*st,
           dirs=[{dx:st,dy:0},{dx:-st,dy:0},{dx:0,dy:st},{dx:0,dy:-st}];
 
     const q=[{x:tx,y:ty}], dist={};
