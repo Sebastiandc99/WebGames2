@@ -237,11 +237,25 @@ const zamoraGame = {
         for(let i=1;i<this.zs.length;i++) this.zs[i].gif.remove();
       }
       this.zs=[
-        {x:460,y:240,gif:enemyGif},
-        {x:460,y:240,gif:createZamoraGif()}
+        Object.assign({gif:enemyGif}, this.randomSpawn()),
+        Object.assign({gif:createZamoraGif()}, this.randomSpawn())
       ];
       this.p={x:100,y:240};
     },
+
+  randomSpawn(ignore=null){
+      for(let i=0;i<50;i++){
+        const x=Math.round(Math.random()*(canvas.width-this.SPR));
+        const y=Math.round(Math.random()*(canvas.height-this.SPR));
+        const sx=Math.round(x/this.step)*this.step;
+        const sy=Math.round(y/this.step)*this.step;
+        if(this.blocked(sx,sy)) continue;
+        if(this.zs.some(z=>z!==ignore && Math.hypot(z.x-sx,z.y-sy)<this.SPR)) continue;
+        if(Math.hypot(this.p.x-sx,this.p.y-sy)<this.SPR) continue;
+        return {x:sx,y:sy};
+      }
+      return {x:460,y:240};
+  },
 
   /* -------- colisión píxel‑perfect -------- */
   blocked(nx,ny){
@@ -318,7 +332,8 @@ const zamoraGame = {
     if(this.frame===this.nextSpawn){
       this.nextSpawn+=1800;
       const gif=createZamoraGif();
-      this.zs.push({x:460,y:240,gif});
+      const pos=this.randomSpawn();
+      this.zs.push(Object.assign({gif}, pos));
       if(this.moveFreq>2) this.moveFreq--;
     }
 
@@ -331,7 +346,10 @@ const zamoraGame = {
         if(--this.lives<=0){ alert('¡Te atraparon!'); this.reset(); }
         else {
           this.p.x=100;
-          for(const zz of this.zs) zz.x=460;
+          for(const zz of this.zs){
+            const pos=this.randomSpawn(zz);
+            zz.x=pos.x; zz.y=pos.y;
+          }
         }
         break;
       }
