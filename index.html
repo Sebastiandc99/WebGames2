@@ -180,12 +180,24 @@ Object.assign(enemyGif.style, {
 });
 document.body.appendChild(enemyGif);
 
+function createZamoraGif(){
+  const img=document.createElement('img');
+  img.src='zamora.gif';
+  Object.assign(img.style,{
+    position:'absolute',width:'40px',height:'40px',
+    pointerEvents:'none',zIndex:1000,display:'block'
+  });
+  document.body.appendChild(img);
+  return img;
+}
+
 /* ---------- objeto principal ---------- */
 const zamoraGame = {
   SPR : 40,             // tamaño sprite
-  step: 10,             // rapidez
+  step: 10,             // tamaño paso del laberinto
+  moveFreq:6,           // frames por movimiento de Zamora
   keys:{}, frame:0, score:0, lives:4,
-  p:{}, z:{}, pix:null, // pix = ImageData del laberinto
+  p:{}, zs:[], pix:null, nextSpawn:1800,
 
   /* -------- iniciar -------- */
   start(){
@@ -196,6 +208,7 @@ const zamoraGame = {
     /* mostrar GIFs */
     heroGif .style.display = 'block';
     enemyGif.style.display = 'block';
+    this.zs[0].gif = enemyGif;
 
     /* capturar bitmap del laberinto */
     const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
@@ -212,14 +225,19 @@ const zamoraGame = {
   /* -------- salir -------- */
   detach(){
     window.onkeydown = window.onkeyup = null;
-    heroGif.style.display = enemyGif.style.display = 'none';
+    heroGif.style.display='none';
+    for(const z of this.zs){ z.gif.style.display='none'; }
   },
 
   /* -------- reinicio -------- */
   reset(){
     this.keys={}; this.frame=0; this.score=0; this.lives=4;
-    this.p = {x:100, y:240};
-    this.z = {x:460, y:240};
+    this.moveFreq=6; this.nextSpawn=1800;
+    if(this.zs.length){
+      for(let i=1;i<this.zs.length;i++) this.zs[i].gif.remove();
+    }
+    this.zs=[{x:460,y:240,gif:enemyGif}];
+    this.p={x:100,y:240};
   },
 
   /* -------- colisión píxel‑perfect -------- */
@@ -238,10 +256,10 @@ const zamoraGame = {
   },
 
   /* -------- calcular ruta -------- */
-  nextStep(){
+  nextStep(z){
     const st=this.step,
-          sx=Math.floor(this.z.x/st)*st,
-          sy=Math.floor(this.z.y/st)*st,
+          sx=Math.floor(z.x/st)*st,
+          sy=Math.floor(z.y/st)*st,
           tx=Math.floor(this.p.x/st)*st,
           ty=Math.floor(this.p.y/st)*st,
           dirs=[{dx:st,dy:0},{dx:-st,dy:0},{dx:0,dy:st},{dx:0,dy:-st}];
@@ -277,27 +295,43 @@ const zamoraGame = {
     if(this.keys['ArrowUp']||this.keys['w'])    this.move(this.p,0,-this.step);
     if(this.keys['ArrowDown']||this.keys['s'])  this.move(this.p,0, this.step);
 
-    /* Zamora cada 6 frames usando ruta más cercana */
-    if(++this.frame % 6 === 0){
-      const step = this.nextStep();
-      if(step) this.move(this.z, step.dx, step.dy);
-      else {
-        const dirs=[{dx:this.step,dy:0},{dx:-this.step,dy:0},{dx:0,dy:this.step},{dx:0,dy:-this.step}];
-        const opts=dirs.filter(d=>!this.blocked(this.z.x+d.dx,this.z.y+d.dy));
-        if(opts.length){
-          const r=opts[Math.floor(Math.random()*opts.length)];
-          this.move(this.z,r.dx,r.dy);
+    /* Zamoras se mueven cada moveFreq frames */
+    if(++this.frame % this.moveFreq === 0){
+      for(const z of this.zs){
+        const step = this.nextStep(z);
+        if(step) this.move(z, step.dx, step.dy);
+        else {
+          const dirs=[{dx:this.step,dy:0},{dx:-this.step,dy:0},{dx:0,dy:this.step},{dx:0,dy:-this.step}];
+          const opts=dirs.filter(d=>!this.blocked(z.x+d.dx,z.y+d.dy));
+          if(opts.length){
+            const r=opts[Math.floor(Math.random()*opts.length)];
+            this.move(z,r.dx,r.dy);
+          }
         }
       }
+    }
+
+    /* generar nuevo Zamora cada 30 segundos */
+    if(this.frame===this.nextSpawn){
+      this.nextSpawn+=1800;
+      const gif=createZamoraGif();
+      this.zs.push({x:460,y:240,gif});
+      if(this.moveFreq>2) this.moveFreq--;
     }
 
     /* score +1 cada 30 frames */
     if(this.frame%30===0) this.score++;
 
     /* colisión sprites */
-    if(Math.hypot(this.p.x-this.z.x,this.p.y-this.z.y)<this.SPR-6){
-      if(--this.lives<=0){ alert('¡Te atraparon!'); this.reset(); }
-      else { this.p.x=100; this.z.x=460; }
+    for(const z of this.zs){
+      if(Math.hypot(this.p.x-z.x,this.p.y-z.y)<this.SPR-6){
+        if(--this.lives<=0){ alert('¡Te atraparon!'); this.reset(); }
+        else {
+          this.p.x=100;
+          for(const zz of this.zs) zz.x=460;
+        }
+        break;
+      }
     }
   },
 
@@ -319,10 +353,13 @@ const zamoraGame = {
     ctx.restore();
 
     /* colocar GIFs sobre el canvas */
-    heroGif .style.left = (canvas.offsetLeft + this.p.x) + 'px';
-    heroGif .style.top  = (canvas.offsetTop  + this.p.y) + 'px';
-    enemyGif.style.left = (canvas.offsetLeft + this.z.x) + 'px';
-    enemyGif.style.top  = (canvas.offsetTop  + this.z.y) + 'px';
+    heroGif.style.left = (canvas.offsetLeft + this.p.x) + 'px';
+    heroGif.style.top  = (canvas.offsetTop  + this.p.y) + 'px';
+    for(const z of this.zs){
+      z.gif.style.left = (canvas.offsetLeft + z.x) + 'px';
+      z.gif.style.top  = (canvas.offsetTop  + z.y) + 'px';
+      z.gif.style.display='block';
+    }
 
     /* HUD */
     ctx.textAlign='left'; ctx.font='18px sans-serif';
