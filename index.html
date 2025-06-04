@@ -204,23 +204,27 @@ const zamoraGame = {
     canvas.width  = 609;
     canvas.height = 528;
 
-    /* capturar bitmap del laberinto */
-    const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
-    off.getContext('2d').drawImage(mazeImg,0,0);
-    this.pix = off.getContext('2d').getImageData(0,0,609,528).data;
+    const begin = () => {
+      /* capturar bitmap del laberinto */
+      const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
+      off.getContext('2d').drawImage(mazeImg,0,0);
+      this.pix = off.getContext('2d').getImageData(0,0,609,528).data;
 
-    this.reset();
+      this.reset();
 
-    /* mostrar GIFs */
-    heroGif .style.display = 'block';
-    enemyGif.style.display = 'block';
-    this.zs[0].gif = enemyGif;
+      /* mostrar GIFs */
+      heroGif .style.display = 'block';
+      enemyGif.style.display = 'block';
+      this.zs[0].gif = enemyGif;
 
-    window.onkeydown = e => this.keys[e.key]=true;
-    window.onkeyup   = e => this.keys[e.key]=false;
+      window.onkeydown = e => this.keys[e.key]=true;
+      window.onkeyup   = e => this.keys[e.key]=false;
 
-    this.loop = ()=>{ this.update(); this.draw(); anim = requestAnimationFrame(this.loop); };
-    if(mazeImg.complete) this.loop(); else mazeImg.onload = ()=>this.loop();
+      this.loop = ()=>{ this.update(); this.draw(); anim = requestAnimationFrame(this.loop); };
+      this.loop();
+    };
+
+    if(mazeImg.complete) begin(); else mazeImg.onload = begin;
   },
 
   /* -------- salir -------- */
