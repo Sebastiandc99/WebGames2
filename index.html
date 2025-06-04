@@ -203,17 +203,18 @@ const zamoraGame = {
   start(){
     canvas.width  = 609;
     canvas.height = 528;
+
+    /* capturar bitmap del laberinto */
+    const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
+    off.getContext('2d').drawImage(mazeImg,0,0);
+    this.pix = off.getContext('2d').getImageData(0,0,609,528).data;
+
     this.reset();
 
     /* mostrar GIFs */
     heroGif .style.display = 'block';
     enemyGif.style.display = 'block';
     this.zs[0].gif = enemyGif;
-
-    /* capturar bitmap del laberinto */
-    const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
-    off.getContext('2d').drawImage(mazeImg,0,0);
-    this.pix = off.getContext('2d').getImageData(0,0,609,528).data;
 
     window.onkeydown = e => this.keys[e.key]=true;
     window.onkeyup   = e => this.keys[e.key]=false;
