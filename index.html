@@ -247,7 +247,7 @@ const zamoraGame = {
   },
 
   partialReset(){
-    this.keys={}; this.frame=0;
+    this.keys={}; this.frame=0; this.score=0;
     this.moveFreq=6; this.nextSpawn=1800;
     for(const z of this.zs){
       if(z.gif !== enemyGif) z.gif.remove();
