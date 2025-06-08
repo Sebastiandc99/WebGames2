@@ -198,6 +198,7 @@ const zamoraGame = {
   moveFreq:6,           // frames por movimiento de Zamora
   keys:{}, frame:0, score:0, lives:4,
   p:{}, zs:[], pix:null, nextSpawn:1800,
+  titleHue:0,
 
   /* -------- iniciar -------- */
   start(){
@@ -237,6 +238,16 @@ const zamoraGame = {
   /* -------- reinicio -------- */
   reset(){
     this.keys={}; this.frame=0; this.score=0; this.lives=4;
+    this.moveFreq=6; this.nextSpawn=1800;
+    for(const z of this.zs){
+      if(z.gif !== enemyGif) z.gif.remove();
+    }
+    this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
+    this.p={x:100,y:240};
+  },
+
+  partialReset(){
+    this.keys={}; this.frame=0;
     this.moveFreq=6; this.nextSpawn=1800;
     for(const z of this.zs){
       if(z.gif !== enemyGif) z.gif.remove();
@@ -345,13 +356,11 @@ const zamoraGame = {
     /* colisión sprites */
     for(const z of this.zs){
       if(Math.hypot(this.p.x-z.x,this.p.y-z.y)<this.SPR-6){
-        if(--this.lives<=0){ alert('¡Te atraparon!'); this.reset(); }
-        else {
-          this.p.x=100;
-          for(const zz of this.zs){
-            const pos=this.randomSpawn(zz);
-            zz.x=pos.x; zz.y=pos.y;
-          }
+        if(--this.lives<=0){
+          alert('¡Te atraparon!');
+          this.reset();
+        } else {
+          this.partialReset();
         }
         break;
       }
@@ -367,10 +376,13 @@ const zamoraGame = {
     ctx.font='32px "Press Start 2P",sans-serif';
     ctx.textAlign='center';
     ctx.lineWidth=2;
-    ctx.fillStyle='#0024ff';
-    ctx.strokeStyle='#66ccff';
+    this.titleHue = (this.titleHue + 2) % 360;
+    const neon = `hsl(${this.titleHue},100%,60%)`;
+    const neonStroke = `hsl(${this.titleHue},100%,80%)`;
+    ctx.fillStyle=neon;
+    ctx.strokeStyle=neonStroke;
     ctx.shadowBlur=14;
-    ctx.shadowColor='#66ccff';
+    ctx.shadowColor=neonStroke;
     ctx.fillText  ('Escapa de Zamora', canvas.width/2, 45);
     ctx.strokeText('Escapa de Zamora', canvas.width/2, 45);
     ctx.restore();
@@ -385,10 +397,11 @@ const zamoraGame = {
     }
 
     /* HUD */
-    ctx.textAlign='left'; ctx.font='18px sans-serif';
+    ctx.textAlign='left';
+    ctx.font='18px sans-serif';
     ctx.fillStyle='#000';                      // score negro
     ctx.fillText('Score: '+this.score, canvas.width-140, 36);
-    ctx.fillStyle='#fff';
+    ctx.fillStyle='#000';
     ctx.fillText('Vidas: '+this.lives, 10, canvas.height-12);
   }
 };
