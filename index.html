@@ -282,7 +282,9 @@ const zamoraGame = {
   },
   move(o,dx,dy){
     const nx=o.x+dx, ny=o.y+dy;
-    if(!this.blocked(nx,ny)){ o.x=nx; o.y=ny; }
+    if(this.blocked(nx,ny)) return;
+    if(o!==this.p && this.zs.some(z=>z!==o && Math.hypot(z.x-nx,z.y-ny)<this.SPR)) return;
+    o.x=nx; o.y=ny;
   },
 
   /* -------- calcular ruta -------- */
