@@ -208,7 +208,11 @@ const eternauta={g:0.5,ground:40,keys:{},difficulty:0,
   spawn(){
     const spd=1+this.difficulty*0.1,vx=(-2-Math.random())*spd;
     const batch=Math.min(1+Math.floor(this.difficulty/5),3);
-    for(let i=0;i<batch;i++)this.enemies.push({x:canvas.width+Math.random()*200+i*40,y:canvas.height-40-32,w:32,h:32,vx,dead:false});
+  for(let i=0;i<batch;i++)this.enemies.push({x:canvas.width+Math.random()*200+i*40,y:canvas.height-40-32,w:32,h:32,vx,dead:false});
+  },
+  collide(a,b){
+    return a.x < b.x + b.w && a.x + a.w > b.x &&
+           a.y < b.y + b.h && a.y + a.h > b.y;
   },
   update(){
     this.frame++;const p=this.p;
