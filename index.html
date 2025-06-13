@@ -34,6 +34,7 @@ const back  =document.getElementById('backBtn');
 const hitSound=new Audio("sound/golpe_pelota.mp3");
 const zamoraMusic=new Audio('musica_zamora.mp3');
 zamoraMusic.loop=true;
+zamoraMusic.volume=0.3;
 zamoraMusic.preload='auto';
 function playZamoraMusic(){
   const p=zamoraMusic.play();
@@ -240,6 +241,13 @@ Object.assign(heroGif.style, {
   pointerEvents:'none', zIndex:1000, display:'none'
 });
 document.body.appendChild(heroGif);
+let heroStill=null;
+heroGif.onload=()=>{
+  const c=Object.assign(document.createElement('canvas'),{width:40,height:40});
+  c.getContext('2d').drawImage(heroGif,0,0);
+  heroStill=c.toDataURL();
+};
+if(heroGif.complete) heroGif.onload();
 
 /* --- GIF de Zamora --- */
 const enemyGif = document.createElement('img');
@@ -269,6 +277,7 @@ const zamoraGame = {
   keys:{}, frame:0, score:0, lives:4,
   p:{}, zs:[], pix:null, nextSpawn:1800,
   titleHue:0,
+  heroMoving:false,
 
   /* -------- iniciar -------- */
   start(){
@@ -319,6 +328,10 @@ const zamoraGame = {
     }
     this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
     this.p={x:100,y:240};
+    this.heroMoving=false;
+    if(heroStill) heroGif.src=heroStill; else heroGif.src='hombre.gif';
+    zamoraMusic.currentTime=0;
+    playZamoraMusic();
   },
 
   partialReset(){
@@ -329,6 +342,10 @@ const zamoraGame = {
     }
     this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
     this.p={x:100,y:240};
+    this.heroMoving=false;
+    if(heroStill) heroGif.src=heroStill; else heroGif.src='hombre.gif';
+    zamoraMusic.currentTime=0;
+    playZamoraMusic();
   },
 
   randomSpawn(ignore=null){
@@ -397,10 +414,20 @@ const zamoraGame = {
   /* -------- lógica de juego -------- */
   update(){
     /* movimiento héroe */
-    if(this.keys['ArrowLeft']||this.keys['a'])  this.move(this.p,-this.step,0);
-    if(this.keys['ArrowRight']||this.keys['d']) this.move(this.p, this.step,0);
-    if(this.keys['ArrowUp']||this.keys['w'])    this.move(this.p,0,-this.step);
-    if(this.keys['ArrowDown']||this.keys['s'])  this.move(this.p,0, this.step);
+    const mvLeft  = this.keys['ArrowLeft']  || this.keys['a'];
+    const mvRight = this.keys['ArrowRight'] || this.keys['d'];
+    const mvUp    = this.keys['ArrowUp']    || this.keys['w'];
+    const mvDown  = this.keys['ArrowDown']  || this.keys['s'];
+    if(mvLeft)  this.move(this.p,-this.step,0);
+    if(mvRight) this.move(this.p, this.step,0);
+    if(mvUp)    this.move(this.p,0,-this.step);
+    if(mvDown)  this.move(this.p,0, this.step);
+    const moving = mvLeft||mvRight||mvUp||mvDown;
+    if(moving){
+      if(!this.heroMoving){ this.heroMoving=true; heroGif.src='hombre.gif'; }
+    }else{
+      if(this.heroMoving){ this.heroMoving=false; if(heroStill) heroGif.src=heroStill; }
+    }
 
     /* Zamoras se mueven cada moveFreq frames */
     if(++this.frame % this.moveFreq === 0){
