@@ -32,6 +32,10 @@ const ctx   =canvas.getContext('2d');
 const menu  =document.getElementById('menu');
 const back  =document.getElementById('backBtn');
 const hitSound=new Audio("sound/golpe_pelota.mp3");
+const pongMusic=new Audio('musica_pong.mp3');
+pongMusic.loop=true;
+pongMusic.volume=0.3;
+pongMusic.preload='auto';
 const zamoraMusic=new Audio('musica_zamora.mp3');
 zamoraMusic.loop=true;
 zamoraMusic.volume=0.3;
@@ -45,6 +49,14 @@ function playEternautaMusic(){
   if(p){
     p.catch(()=>{
       document.body.addEventListener('click', playEternautaMusic, {once:true});
+    });
+  }
+}
+function playPongMusic(){
+  const p=pongMusic.play();
+  if(p){
+    p.catch(()=>{
+      document.body.addEventListener('click', playPongMusic, {once:true});
     });
   }
 }
@@ -62,6 +74,7 @@ back.onclick = () => {
   stop(); clearKeys();
   if(current==='eternauta') eternauta.detach();
   if(current==='zamora')    zamoraGame.detach();   // ← añadir
+  if(current==='pong')      pong.detach();
   canvas.style.display='none'; back.style.display='none'; menu.style.display='block';
   current=null;
 };
@@ -78,10 +91,13 @@ const pong={pH:70,pW:10,bR:8,speed:3,lastSpeedInc:0,startTime:0,timeScore:0,titl
     if(resetAll){P.s1=P.s2=0;this.speed=3;this.startTime=Date.now();this.lastSpeedInc=this.startTime;}
   },
   start(){this.init(true);
+    pongMusic.currentTime=0;
+    playPongMusic();
     window.onkeydown=e=>{if(e.key==='ArrowUp'||e.key==='w')P.up=true;if(e.key==='ArrowDown'||e.key==='s')P.down=true;};
     window.onkeyup  =e=>{if(e.key==='ArrowUp'||e.key==='w')P.up=false;if(e.key==='ArrowDown'||e.key==='s')P.down=false;};
     const loop=()=>{this.upd();this.draw();anim=requestAnimationFrame(loop);};loop();
   },
+  detach(){pongMusic.pause(); pongMusic.currentTime=0;},
   upd(){
     if(P.up&&this.y1>0)this.y1-=5;
     if(P.down&&this.y1+this.pH<canvas.height)this.y1+=5;
