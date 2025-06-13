@@ -32,6 +32,8 @@ const ctx   =canvas.getContext('2d');
 const menu  =document.getElementById('menu');
 const back  =document.getElementById('backBtn');
 const hitSound=new Audio("sound/golpe_pelota.mp3");
+const zamoraMusic=new Audio('musica_zamora.mp3');
+zamoraMusic.loop=true;
 let anim,current=null;
 function stop(){cancelAnimationFrame(anim);}function clearKeys(){window.onkeydown=window.onkeyup=null;}
 back.onclick = () => {
@@ -263,6 +265,9 @@ const zamoraGame = {
     canvas.width  = 609;
     canvas.height = 528;
 
+    zamoraMusic.currentTime = 0;
+    zamoraMusic.play();
+
     const begin = () => {
       /* capturar bitmap del laberinto */
       const off   = Object.assign(document.createElement('canvas'), {width:609, height:528});
@@ -289,6 +294,8 @@ const zamoraGame = {
   /* -------- salir -------- */
   detach(){
     window.onkeydown = window.onkeyup = null;
+    zamoraMusic.pause();
+    zamoraMusic.currentTime = 0;
     heroGif.style.display='none';
     for(const z of this.zs){ z.gif.style.display='none'; }
   },
