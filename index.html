@@ -31,6 +31,7 @@ const canvas=document.getElementById('gameCanvas');
 const ctx   =canvas.getContext('2d');
 const menu  =document.getElementById('menu');
 const back  =document.getElementById('backBtn');
+const hitSound=new Audio("sound/golpe_pelota.mp3");
 let anim,current=null;
 function stop(){cancelAnimationFrame(anim);}function clearKeys(){window.onkeydown=window.onkeyup=null;}
 back.onclick = () => {
@@ -56,9 +57,18 @@ const pong={pH:70,pW:10,bR:8,
     if(this.y<this.y2+this.pH/2&&this.y2>0)this.y2-=4;
     else if(this.y>this.y2+this.pH/2&&this.y2+this.pH<canvas.height)this.y2+=4;
     this.x+=this.vx;this.y+=this.vy;
-    if(this.y-this.bR<0||this.y+this.bR>canvas.height)this.vy*=-1;
-    if(this.x-this.bR<20&&this.y>this.y1&&this.y<this.y1+this.pH)this.vx*=-1;
-    if(this.x+this.bR>canvas.width-20&&this.y>this.y2&&this.y<this.y2+this.pH)this.vx*=-1;
+    if(this.y-this.bR<0||this.y+this.bR>canvas.height){
+      this.vy*=-1;
+      hitSound.currentTime=0;hitSound.play();
+    }
+    if(this.x-this.bR<20&&this.y>this.y1&&this.y<this.y1+this.pH){
+      this.vx*=-1;
+      hitSound.currentTime=0;hitSound.play();
+    }
+    if(this.x+this.bR>canvas.width-20&&this.y>this.y2&&this.y<this.y2+this.pH){
+      this.vx*=-1;
+      hitSound.currentTime=0;hitSound.play();
+    }
     if(this.x<0){P.s2++;this.init();}if(this.x>canvas.width){P.s1++;this.init();}
   },
   draw(){
@@ -79,13 +89,28 @@ const breakout={pW:80,pH:10,
     const loop=()=>{this.update();this.draw();anim=requestAnimationFrame(loop);};loop();
   },
   reset(){this.right=this.left=false;this.ballX=canvas.width/2;this.ballY=canvas.height-30;this.dx=3;this.dy=-3;this.ballR=8;this.paddleX=(canvas.width-this.pW)/2;this.rows=5;this.cols=7;this.bW=70;this.bH=20;this.pad=10;this.offT=30;this.offL=35;this.bricks=[];for(let c=0;c<this.cols;c++)this.bricks[c]=Array(this.rows).fill(1);},
-  hit(){for(let c=0;c<this.cols;c++)for(let r=0;r<this.rows;r++){if(!this.bricks[c][r])continue;let bx=(c*(this.bW+this.pad))+this.offL,by=(r*(this.bH+this.pad))+this.offT;if(this.ballX>bx&&this.ballX<bx+this.bW&&this.ballY>by&&this.ballY<by+this.bH){this.dy*=-1;this.bricks[c][r]=0;}}},
+  hit(){
+    for(let c=0;c<this.cols;c++)for(let r=0;r<this.rows;r++){
+      if(!this.bricks[c][r])continue;
+      let bx=(c*(this.bW+this.pad))+this.offL,by=(r*(this.bH+this.pad))+this.offT;
+      if(this.ballX>bx&&this.ballX<bx+this.bW&&this.ballY>by&&this.ballY<by+this.bH){
+        this.dy*=-1;this.bricks[c][r]=0;
+        hitSound.currentTime=0;hitSound.play();
+      }
+    }
+  },
   update(){
     this.hit();
-    if(this.ballX+this.dx>canvas.width-this.ballR||this.ballX+this.dx<this.ballR)this.dx*=-1;
-    if(this.ballY+this.dy<this.ballR)this.dy*=-1;
+    if(this.ballX+this.dx>canvas.width-this.ballR||this.ballX+this.dx<this.ballR){
+      this.dx*=-1;hitSound.currentTime=0;hitSound.play();
+    }
+    if(this.ballY+this.dy<this.ballR){
+      this.dy*=-1;hitSound.currentTime=0;hitSound.play();
+    }
     else if(this.ballY+this.dy>canvas.height-this.ballR){
-      if(this.ballX>this.paddleX&&this.ballX<this.paddleX+this.pW)this.dy*=-1;else{this.reset();return;}
+      if(this.ballX>this.paddleX&&this.ballX<this.paddleX+this.pW){
+        this.dy*=-1;hitSound.currentTime=0;hitSound.play();
+      }else{this.reset();return;}
     }
     this.ballX+=this.dx;this.ballY+=this.dy;
     if(this.right&&this.paddleX<canvas.width-this.pW)this.paddleX+=5;else if(this.left&&this.paddleX>0)this.paddleX-=5;
