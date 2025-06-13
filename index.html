@@ -36,6 +36,18 @@ const zamoraMusic=new Audio('musica_zamora.mp3');
 zamoraMusic.loop=true;
 zamoraMusic.volume=0.3;
 zamoraMusic.preload='auto';
+const eternautaMusic=new Audio("musica_eternauta.mp3");
+eternautaMusic.loop=true;
+eternautaMusic.volume=0.3;
+eternautaMusic.preload="auto";
+function playEternautaMusic(){
+  const p=eternautaMusic.play();
+  if(p){
+    p.catch(()=>{
+      document.body.addEventListener('click', playEternautaMusic, {once:true});
+    });
+  }
+}
 function playZamoraMusic(){
   const p=zamoraMusic.play();
   if(p){
@@ -179,17 +191,20 @@ const heroImg=new Image(); heroImg.src='hero.png';
 const enemyImg=new Image(); enemyImg.src='enemy.png';
 const eternauta={g:0.5,ground:40,keys:{},difficulty:0,
   start(){canvas.width=800;canvas.height=450;this.reset();
+    eternautaMusic.currentTime=0;
+    playEternautaMusic();
     window.onkeydown=e=>this.keys[e.key]=true; window.onkeyup=e=>this.keys[e.key]=false;
     this.loop=()=>{this.update();this.draw();anim=requestAnimationFrame(this.loop);};
     if(heroImg.complete&&enemyImg.complete)this.loop();else heroImg.onload=enemyImg.onload=()=>this.loop();
   },
-  detach(){window.onkeydown=window.onkeyup=null;},
+  detach(){window.onkeydown=window.onkeyup=null; eternautaMusic.pause(); eternautaMusic.currentTime=0;},
   reset(){
     this.p={x:50,y:canvas.height-40-48,w:32,h:48,vx:0,vy:0,onG:false};
     this.enemies=[];this.score=0;this.spawnCD=120;this.difficulty=0;this.frame=0;
     this.snow=Array.from({length:160},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,s:Math.random()*1+0.5}));
+    eternautaMusic.currentTime=0;
+    playEternautaMusic();
   },
-  collide(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;},
   spawn(){
     const spd=1+this.difficulty*0.1,vx=(-2-Math.random())*spd;
     const batch=Math.min(1+Math.floor(this.difficulty/5),3);
@@ -241,13 +256,6 @@ Object.assign(heroGif.style, {
   pointerEvents:'none', zIndex:1000, display:'none'
 });
 document.body.appendChild(heroGif);
-let heroStill=null;
-heroGif.onload=()=>{
-  const c=Object.assign(document.createElement('canvas'),{width:40,height:40});
-  c.getContext('2d').drawImage(heroGif,0,0);
-  heroStill=c.toDataURL();
-};
-if(heroGif.complete) heroGif.onload();
 
 /* --- GIF de Zamora --- */
 const enemyGif = document.createElement('img');
@@ -329,8 +337,8 @@ const zamoraGame = {
     this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
     this.p={x:100,y:240};
     this.heroMoving=false;
-    if(heroStill) heroGif.src=heroStill; else heroGif.src='hombre.gif';
     zamoraMusic.currentTime=0;
+    heroGif.src="hombre.gif";
     playZamoraMusic();
   },
 
@@ -343,8 +351,8 @@ const zamoraGame = {
     this.zs=[Object.assign({gif:enemyGif}, this.randomSpawn())];
     this.p={x:100,y:240};
     this.heroMoving=false;
-    if(heroStill) heroGif.src=heroStill; else heroGif.src='hombre.gif';
     zamoraMusic.currentTime=0;
+    heroGif.src="hombre.gif";
     playZamoraMusic();
   },
 
@@ -426,7 +434,7 @@ const zamoraGame = {
     if(moving){
       if(!this.heroMoving){ this.heroMoving=true; heroGif.src='hombre.gif'; }
     }else{
-      if(this.heroMoving){ this.heroMoving=false; if(heroStill) heroGif.src=heroStill; }
+      if(this.heroMoving){ this.heroMoving=false; heroGif.src="hombre.gif"; }
     }
 
     /* Zamoras se mueven cada moveFreq frames */
