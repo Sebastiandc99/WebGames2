@@ -44,7 +44,7 @@ back.onclick = () => {
 
 /* ====== PONG ====== */
 let P={up:false,down:false,s1:0,s2:0};
-const pong={pH:70,pW:10,bR:8,speed:3,lastSpeedInc:0,startTime:0,timeScore:0,
+const pong={pH:70,pW:10,bR:8,speed:3,lastSpeedInc:0,startTime:0,timeScore:0,titleHue:0,
   init(resetAll=false){
     canvas.width=600;canvas.height=400;
     this.y1=this.y2=(canvas.height-this.pH)/2;
@@ -92,7 +92,23 @@ const pong={pH:70,pW:10,bR:8,speed:3,lastSpeedInc:0,startTime:0,timeScore:0,
     ctx.fillRect(10,this.y1,this.pW,this.pH);
     ctx.fillRect(canvas.width-20,this.y2,this.pW,this.pH);
     ctx.beginPath();ctx.arc(this.x,this.y,this.bR,0,Math.PI*2);ctx.fill();
-    ctx.font='20px sans-serif';ctx.fillText(P.s1,canvas.width/4,30);
+    ctx.save();
+    ctx.font='32px "Press Start 2P",sans-serif';
+    ctx.textAlign='center';
+    ctx.lineWidth=2;
+    this.titleHue=(this.titleHue+2)%360;
+    const neon=`hsl(${this.titleHue},100%,60%)`;
+    const neonStroke=`hsl(${this.titleHue},100%,80%)`;
+    ctx.fillStyle=neon;
+    ctx.strokeStyle=neonStroke;
+    ctx.shadowBlur=14;
+    ctx.shadowColor=neonStroke;
+    ctx.fillText('PONG',canvas.width/2,45);
+    ctx.strokeText('PONG',canvas.width/2,45);
+    ctx.restore();
+    ctx.font='20px sans-serif';
+    ctx.fillStyle='#fff';
+    ctx.fillText(P.s1,canvas.width/4,30);
     ctx.fillText(P.s2,canvas.width*3/4,30);
     ctx.fillText(this.timeScore,canvas.width/2-10,30);
   }
