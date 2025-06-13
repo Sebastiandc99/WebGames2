@@ -189,15 +189,20 @@ const breakout={pW:80,pH:10,
 /* ====== EL ETERNAUTA ====== */
 const heroImg=new Image(); heroImg.src='hero.png';
 const enemyImg=new Image(); enemyImg.src='enemy.png';
-const eternauta={g:0.5,ground:40,keys:{},difficulty:0,
-  start(){canvas.width=800;canvas.height=450;this.reset();
+const eternauta={g:0.5,ground:40,keys:{},difficulty:0,running:false,
+  start(){
+    if(this.running) return;
+    this.running=true;
+    canvas.width=800;canvas.height=450;this.reset();
     eternautaMusic.currentTime=0;
     playEternautaMusic();
     window.onkeydown=e=>this.keys[e.key]=true; window.onkeyup=e=>this.keys[e.key]=false;
-    this.loop=()=>{this.update();this.draw();anim=requestAnimationFrame(this.loop);};
-    if(heroImg.complete&&enemyImg.complete)this.loop();else heroImg.onload=enemyImg.onload=()=>this.loop();
+    this.loop=()=>{if(!this.running) return; this.update();this.draw();anim=requestAnimationFrame(this.loop);};
+    const begin=()=>{if(this.running) this.loop();};
+    if(heroImg.complete&&enemyImg.complete) begin();
+    else {heroImg.onload=begin; enemyImg.onload=begin;}
   },
-  detach(){window.onkeydown=window.onkeyup=null; eternautaMusic.pause(); eternautaMusic.currentTime=0;},
+  detach(){window.onkeydown=window.onkeyup=null; eternautaMusic.pause(); eternautaMusic.currentTime=0; this.running=false;},
   reset(){
     this.p={x:50,y:canvas.height-40-48,w:32,h:48,vx:0,vy:0,onG:false};
     this.enemies=[];this.score=0;this.spawnCD=120;this.difficulty=0;this.frame=0;
