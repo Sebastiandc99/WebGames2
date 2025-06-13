@@ -119,9 +119,10 @@ const pong={pH:70,pW:10,bR:8,speed:3,lastSpeedInc:0,startTime:0,timeScore:0,titl
     ctx.restore();
     ctx.font='20px sans-serif';
     ctx.fillStyle='#fff';
-    ctx.fillText(P.s1,canvas.width/4,30);
-    ctx.fillText(P.s2,canvas.width*3/4,30);
-    ctx.fillText(this.timeScore,canvas.width/2-10,30);
+    const scoreY=80;
+    ctx.fillText(P.s1,canvas.width/4,scoreY);
+    ctx.fillText(P.s2,canvas.width*3/4,scoreY);
+    ctx.fillText(this.timeScore,canvas.width/2-10,scoreY);
   }
 };
 
